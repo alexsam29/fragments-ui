@@ -1,0 +1,20 @@
+{
+  "name": "fragments-ui",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Frontend UI to test the Fragments Microservice",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "parcel src/index.html",
+    "build": "parcel build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexsam29/fragments-ui.git"
+  },
+  "author": "Alexander Samaniego <asamaniego@myseneca.ca>",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "parcel": "^2.8.3"
+  }
+}
