@@ -1,4 +1,5 @@
 import { Auth, getUser } from './auth';
+import { getUserFragments } from './api';
 
 async function init() {
   // UI elements
@@ -21,6 +22,8 @@ async function init() {
     logoutBtn.disabled = true;
     return;
   }
+
+  getUserFragments(user);
 
   console.log({ user });
   userSection.hidden = false;
