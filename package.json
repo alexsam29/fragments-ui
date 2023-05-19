@@ -5,7 +5,7 @@
   "description": "Frontend UI to test the Fragments Microservice",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "parcel src/index.html",
+    "start": "parcel index.html",
     "build": "parcel build"
   },
   "repository": {
@@ -15,6 +15,13 @@
   "author": "Alexander Samaniego <asamaniego@myseneca.ca>",
   "license": "UNLICENSED",
   "devDependencies": {
-    "parcel": "^2.8.3"
+    "buffer": "^5.7.1",
+    "parcel": "^2.8.3",
+    "process": "^0.11.10",
+    "punycode": "^1.4.1",
+    "querystring-es3": "^0.2.1"
+  },
+  "dependencies": {
+    "aws-amplify": "^5.2.1"
   }
 }
