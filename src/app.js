@@ -27,14 +27,14 @@ async function init() {
     if (fragmentText) {
       const user = await getUser();
       if (user) {
-        const fragment = await createFragment(user, fragmentText);
+        const response = await createFragment(user, fragmentText);
         fragmentInput.value = '';
 
         // Add the new fragment data to the list
         const listItem = document.createElement('li');
         listItem.classList.add('list-group-item');
         listItem.innerHTML = `
-          <span>Fragment ID: ${fragment.id}</span>
+          <span>Fragment ID: ${response.fragment.id}</span>
           <button type="button" class="btn btn-primary btn-sm ms-2 viewBtn float-end" data-bs-toggle="modal" data-bs-target="#dataModal">View</button>
         `;
         fragmentsList.querySelector('ul').appendChild(listItem);
