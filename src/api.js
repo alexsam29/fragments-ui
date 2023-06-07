@@ -1,11 +1,13 @@
 const apiUrl = process.env.API_URL || 'http://localhost:8080';
 
-// Given an authenticated user, request all fragments for this user
+/**
+ * Given an authenticated user, request all fragments for this user
+ * @param {*} user A user object for authentication
+ */
 export async function getUserFragments(user) {
   console.log('Requesting user fragments data...');
   try {
     const res = await fetch(`${apiUrl}/v1/fragments`, {
-      // Generate headers with the proper Authorization bearer token
       headers: user.authorizationHeaders(),
     });
     if (!res.ok) {
@@ -18,8 +20,13 @@ export async function getUserFragments(user) {
   }
 }
 
-// Given an authenticated user and text, create a new fragment
-export async function createFragment(user, fragmentText) {
+/**
+ * Given an authenticated user and data, create a new fragment
+ * @param {*} user A user object for authentication 
+ * @param {} fragmentData Data for the fragment
+ * @returns {Promise<any>} Created fragment object 
+ */
+export async function createFragment(user, fragmentData) {
   console.log('Creating a new fragment...');
   try {
     const res = await fetch(`${apiUrl}/v1/fragments`, {
@@ -27,7 +34,7 @@ export async function createFragment(user, fragmentText) {
       headers: {
         ...user.authorizationHeaders('text/plain'),
       },
-      body: fragmentText,
+      body: fragmentData,
     });
     if (!res.ok) {
       throw new Error(`${res.status} ${res.statusText}`);
@@ -40,11 +47,16 @@ export async function createFragment(user, fragmentText) {
   }
 }
 
+/**
+ * Given an authenticated user, request fragment data for specified fragment ID
+ * @param {*} user A user object for authentication
+ * @param {String} fragmentId ID for specific fragment
+ * @returns {Promise<any>} Data for the requested fragment
+ */
 export async function getFragmentDataById(user, fragmentId) {
   console.log('Getting fragment data by ID...');
   try {
     const res = await fetch(`${apiUrl}/v1/fragments/${fragmentId}`, {
-      // Generate headers with the proper Authorization bearer token
       headers: user.authorizationHeaders(),
     });
     if (!res.ok) {
