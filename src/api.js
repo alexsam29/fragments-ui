@@ -33,10 +33,27 @@ export async function createFragment(user, fragmentText) {
       throw new Error(`${res.status} ${res.statusText}`);
     }
 
-    const data = await res.text();
-    return JSON.parse(data);
-    
+    return await res.json();
+
   } catch (err) {
     console.error('Unable to create a new fragment', { err });
+  }
+}
+
+export async function getFragmentDataById(user, fragmentId) {
+  console.log('Getting fragment data by ID...');
+  try {
+    const res = await fetch(`${apiUrl}/v1/fragments/${fragmentId}`, {
+      // Generate headers with the proper Authorization bearer token
+      headers: user.authorizationHeaders(),
+    });
+    if (!res.ok) {
+      throw new Error(`${res.status} ${res.statusText}`);
+    }
+
+    return await res.json();
+
+  } catch (err) {
+    console.error('Unable to call GET /v1/fragment', { err });
   }
 }
