@@ -3,6 +3,7 @@ const apiUrl = process.env.API_URL || 'http://localhost:8080';
 /**
  * Given an authenticated user, request all fragments for this user
  * @param {*} user A user object for authentication
+ * @returns {Promise<any>} Object containing array of Fragment IDs
  */
 export async function getUserFragments(user) {
   console.log('Requesting user fragments data...');
@@ -13,8 +14,11 @@ export async function getUserFragments(user) {
     if (!res.ok) {
       throw new Error(`${res.status} ${res.statusText}`);
     }
+
     const data = await res.json();
     console.log('Got user fragments data', { data });
+    return data;
+
   } catch (err) {
     console.error('Unable to call GET /v1/fragment', { err });
   }

@@ -29,15 +29,7 @@ async function init() {
       if (user) {
         const response = await createFragment(user, fragmentText);
         fragmentInput.value = '';
-
-        // Add the new fragment data to the list
-        const listItem = document.createElement('li');
-        listItem.classList.add('list-group-item');
-        listItem.innerHTML = `
-          <span>Fragment ID: ${response.fragment.id}</span>
-          <button type="button" class="btn btn-primary btn-sm ms-2 viewBtn float-end" data-bs-toggle="modal" data-bs-target="#dataModal">View</button>
-        `;
-        fragmentsList.querySelector('ul').appendChild(listItem);
+        addFragmentToList(response.fragment.id);
       }
     }
   };
@@ -54,7 +46,11 @@ async function init() {
     return;
   }
 
-  getUserFragments(user);
+  getUserFragments(user).then((results) => {
+    results.fragments.forEach((fragmentId) => {
+      addFragmentToList(fragmentId);
+    });
+  });
 
   console.log({ user });
   userSection.hidden = false;
@@ -70,7 +66,10 @@ document.addEventListener('click', (event) => {
   }
 });
 
-// Function to open the modal
+/**
+ * Function to open the modal and view fragment data
+ * @param {*} fragmentId  ID of the fragment
+ */
 async function openModal(fragmentId) {
   const user = await getUser();
 
@@ -80,6 +79,20 @@ async function openModal(fragmentId) {
   const body = document.getElementById('dataModalBody');
   const fragmentData = await getFragmentDataById(user, fragmentId);
   body.innerText = fragmentData;
+}
+
+/**
+ * Add the fragment to fragment list
+ * @param {*} fragmentId ID of the Fragment
+ */
+function addFragmentToList(fragmentId) {
+  const listItem = document.createElement('li');
+  listItem.classList.add('list-group-item');
+  listItem.innerHTML = `
+          <span>Fragment ID: ${fragmentId}</span>
+          <button type="button" class="btn btn-primary btn-sm ms-2 viewBtn float-end" data-bs-toggle="modal" data-bs-target="#dataModal">View</button>
+        `;
+  fragmentsList.querySelector('ul').appendChild(listItem);
 }
 
 // Wait for the DOM to load, then start the app
