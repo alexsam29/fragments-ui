@@ -79,7 +79,7 @@ async function openModal(fragmentId) {
 
   const body = document.getElementById('dataModalBody');
   const fragmentData = await getFragmentDataById(user, fragmentId);
-  body.innerText = fragmentData.data;
+  body.innerText = fragmentData;
 }
 
 // Wait for the DOM to load, then start the app

@@ -63,7 +63,7 @@ export async function getFragmentDataById(user, fragmentId) {
       throw new Error(`${res.status} ${res.statusText}`);
     }
 
-    return await res.json();
+    return await res.text();
 
   } catch (err) {
     console.error('Unable to call GET /v1/fragment', { err });
