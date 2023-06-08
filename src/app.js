@@ -9,7 +9,6 @@ async function init() {
   const fragmentForm = document.querySelector('#fragmentForm');
   const fragmentInput = document.querySelector('#fragmentInput');
   const clearBtn = document.querySelector('#clearBtn');
-  const fragmentsList = document.querySelector('#fragmentsList');
 
   loginBtn.onclick = () => {
     // Sign-in via the Amazon Cognito Hosted UI
@@ -74,7 +73,7 @@ async function openModal(fragmentId) {
   const user = await getUser();
 
   const title = document.getElementById('dataModalTitle');
-  title.innerText = "Fragment Data";
+  title.innerText = 'Fragment Data';
 
   const body = document.getElementById('dataModalBody');
   const fragmentData = await getFragmentDataById(user, fragmentId);

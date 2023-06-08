@@ -18,7 +18,6 @@ export async function getUserFragments(user) {
     const data = await res.json();
     console.log('Got user fragments data', { data });
     return data;
-
   } catch (err) {
     console.error('Unable to call GET /v1/fragment', { err });
   }
@@ -26,9 +25,9 @@ export async function getUserFragments(user) {
 
 /**
  * Given an authenticated user and data, create a new fragment
- * @param {*} user A user object for authentication 
+ * @param {*} user A user object for authentication
  * @param {} fragmentData Data for the fragment
- * @returns {Promise<any>} Created fragment object 
+ * @returns {Promise<any>} Created fragment object
  */
 export async function createFragment(user, fragmentData) {
   console.log('Creating a new fragment...');
@@ -45,7 +44,6 @@ export async function createFragment(user, fragmentData) {
     }
 
     return await res.json();
-
   } catch (err) {
     console.error('Unable to create a new fragment', { err });
   }
@@ -68,7 +66,6 @@ export async function getFragmentDataById(user, fragmentId) {
     }
 
     return await res.text();
-
   } catch (err) {
     console.error('Unable to call GET /v1/fragment', { err });
   }
