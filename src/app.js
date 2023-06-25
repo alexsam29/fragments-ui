@@ -8,6 +8,7 @@ async function init() {
   const logoutBtn = document.querySelector('#logout');
   const fragmentForm = document.querySelector('#fragmentForm');
   const fragmentInput = document.querySelector('#fragmentInput');
+  const fragmentType = document.querySelector('#contentTypeSelect');
   const clearBtn = document.querySelector('#clearBtn');
 
   loginBtn.onclick = () => {
@@ -26,7 +27,7 @@ async function init() {
     if (fragmentText) {
       const user = await getUser();
       if (user) {
-        const response = await createFragment(user, fragmentText);
+        const response = await createFragment(user, fragmentText, fragmentType.value);
         fragmentInput.value = '';
         addFragmentToList(response.fragment.id);
       }
@@ -77,7 +78,11 @@ async function openModal(fragmentId) {
 
   const body = document.getElementById('dataModalBody');
   const fragmentData = await getFragmentDataById(user, fragmentId);
-  body.innerText = fragmentData;
+  if (typeof fragmentData === 'string') {
+    body.innerText = fragmentData;
+  } else {
+    body.innerText = JSON.stringify(fragmentData);
+  }
 }
 
 /**

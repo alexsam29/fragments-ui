@@ -27,8 +27,15 @@
     <h2 class="text-center p-3">Hello <span class="username"></span>!</h2>
     <form id="fragmentForm">
       <div class="mb-3">
-        <label for="fragmentInput" class="form-label">Fragment Text</label>
-        <input type="text" class="form-control" id="fragmentInput" required>
+        <label for="fragmentInput" class="form-label">Fragment</label>
+        <textarea class="form-control" id="fragmentInput" rows="3" required></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="contentTypeSelect" class="form-label">Content Type</label>
+        <select class="form-select" id="contentTypeSelect" required>
+          <option value="text/plain">Text</option>
+          <option value="application/json">JSON</option>
+        </select>
       </div>
       <button type="submit" class="btn btn-success">Submit</button>
       <button type="button" class="btn btn-secondary" id="clearBtn">Clear</button>

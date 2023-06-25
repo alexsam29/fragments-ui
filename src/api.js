@@ -29,13 +29,13 @@ export async function getUserFragments(user) {
  * @param {} fragmentData Data for the fragment
  * @returns {Promise<any>} Created fragment object
  */
-export async function createFragment(user, fragmentData) {
+export async function createFragment(user, fragmentData, contentType) {
   console.log('Creating a new fragment...');
   try {
     const res = await fetch(`${apiUrl}/v1/fragments`, {
       method: 'POST',
       headers: {
-        ...user.authorizationHeaders('text/plain'),
+        ...user.authorizationHeaders(contentType),
       },
       body: fragmentData,
     });
@@ -65,7 +65,12 @@ export async function getFragmentDataById(user, fragmentId) {
       throw new Error(`${res.status} ${res.statusText}`);
     }
 
-    return await res.text();
+    const contentType = res.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      return await res.json();
+    } else {
+      return await res.text();
+    }
   } catch (err) {
     console.error('Unable to call GET /v1/fragment', { err });
   }
