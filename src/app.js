@@ -78,10 +78,35 @@ async function openModal(fragmentId) {
 
   const body = document.getElementById('dataModalBody');
   const fragmentData = await getFragmentDataById(user, fragmentId);
-  if (typeof fragmentData === 'string') {
-    body.innerText = fragmentData;
-  } else {
-    body.innerText = JSON.stringify(fragmentData);
+
+  const contentType = fragmentData.headers.get('content-type');
+
+  // TODO: convert data to HTML format to display.
+  switch (true) {
+    case contentType.includes('text/plain'):
+      body.innerText = await fragmentData.text();
+      break;
+    case contentType.includes('text/html'):
+      body.innerHTML = await fragmentData.text();
+      break;
+    case contentType.includes('text/css'):
+      body.innerText = await fragmentData.text();
+      break;
+    case contentType.includes('text/csv'):
+      body.innerText = await fragmentData.text();
+      break;
+    case contentType.includes('text/javascript'):
+      body.innerText = await fragmentData.text();
+      break;
+    case contentType.includes('text/xml'):
+      body.innerText = await fragmentData.text();
+      break;
+    case contentType.includes('text/javascript'):
+      body.innerText = await fragmentData.text();
+      break;
+    default:
+      body.innerText = JSON.stringify(await fragmentData.json());
+      break;
   }
 }
 
