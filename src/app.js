@@ -10,6 +10,7 @@ async function init() {
   const fragmentInput = document.querySelector('#fragmentInput');
   const fragmentType = document.querySelector('#contentTypeSelect');
   const clearBtn = document.querySelector('#clearBtn');
+  const viewSwitch = document.getElementById('viewSwitch');
 
   loginBtn.onclick = () => {
     // Sign-in via the Amazon Cognito Hosted UI
@@ -29,10 +30,35 @@ async function init() {
       if (user) {
         const response = await createFragment(user, fragmentText, fragmentType.value);
         fragmentInput.value = '';
-        addFragmentToList(response.fragment.id);
+        addFragmentToList(
+          viewSwitch.checked ? response.fragment : response.fragment.id,
+          viewSwitch.checked ? true : false
+        );
       }
     }
   };
+
+  viewSwitch.addEventListener('change', () => {
+    const fragmentList = document.querySelector('#fragmentList');
+    fragmentList.innerHTML = '';
+    if (viewSwitch.checked) {
+      // Toggle to metadata view
+      // Make a new API request to fetch metadata\
+      getUserFragments(user, true).then((results) => {
+        results.fragments.forEach((metadata) => {
+          //addFragmentToList(fragmentId);
+          console.log(metadata);
+          addFragmentToList(metadata, true);
+        });
+      });
+    } else {
+      getUserFragments(user).then((results) => {
+        results.fragments.forEach((fragmentId) => {
+          addFragmentToList(fragmentId);
+        });
+      });
+    }
+  });
 
   // Handle clear button click
   clearBtn.onclick = () => {
@@ -61,7 +87,9 @@ async function init() {
 // Event delegation to handle click event on dynamically added buttons
 document.addEventListener('click', (event) => {
   if (event.target.classList.contains('viewBtn')) {
-    const fragmentId = event.target.previousElementSibling.textContent.replace('Fragment ID: ', '');
+    const fragmentId = event.target.previousElementSibling.textContent
+      .replace('Fragment ID: ', '')
+      .split(' ')[0];
     openModal(fragmentId);
   }
 });
@@ -101,6 +129,9 @@ async function openModal(fragmentId) {
     case contentType.includes('text/xml'):
       body.innerText = await fragmentData.text();
       break;
+    case contentType.includes('text/markdown'):
+      body.innerText = await fragmentData.text();
+      break;
     case contentType.includes('text/javascript'):
       body.innerText = await fragmentData.text();
       break;
@@ -114,13 +145,26 @@ async function openModal(fragmentId) {
  * Add the fragment to fragment list
  * @param {*} fragmentId ID of the Fragment
  */
-function addFragmentToList(fragmentId) {
+function addFragmentToList(fragment, expand = false) {
   const listItem = document.createElement('li');
   listItem.classList.add('list-group-item');
-  listItem.innerHTML = `
-          <span>Fragment ID: ${fragmentId}</span>
+  if (expand) {
+    listItem.innerHTML = `<span><b>Fragment ID:</b> ${fragment.id}<br>
+                          Owner ID: ${fragment.ownerId}<br>
+                          Size: ${fragment.size}<br>
+                          Type: ${fragment.type}<br>
+                          Created ${new Date(fragment.created).toDateString()} 
+                          ${new Date(fragment.created).toLocaleTimeString()}<br>
+                          Updated: ${new Date(fragment.updated).toDateString()} 
+                          ${new Date(fragment.updated).toLocaleTimeString()}</span>
+                          <button type="button" class="btn btn-primary btn-md ms-2 viewBtn float-end translate-middle" data-bs-toggle="modal" data-bs-target="#dataModal">View</button>`;
+  } else {
+    listItem.innerHTML = `
+          <span><b>Fragment ID:</b> ${fragment}</span>
           <button type="button" class="btn btn-primary btn-sm ms-2 viewBtn float-end" data-bs-toggle="modal" data-bs-target="#dataModal">View</button>
         `;
+  }
+
   fragmentsList.querySelector('ul').appendChild(listItem);
 }
 

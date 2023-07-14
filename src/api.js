@@ -3,12 +3,14 @@ const apiUrl = process.env.API_URL || 'http://localhost:8080';
 /**
  * Given an authenticated user, request all fragments for this user
  * @param {*} user A user object for authentication
+ * @param {boolean} expand Get Fragment metadata
  * @returns {Promise<any>} Object containing array of Fragment IDs
  */
-export async function getUserFragments(user) {
+export async function getUserFragments(user, expand = false) {
   console.log('Requesting user fragments data...');
   try {
-    const res = await fetch(`${apiUrl}/v1/fragments`, {
+    const url = expand ? `${apiUrl}/v1/fragments?expand=1` : `${apiUrl}/v1/fragments`;
+    const res = await fetch(url, {
       headers: user.authorizationHeaders(),
     });
     if (!res.ok) {
