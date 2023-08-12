@@ -25,7 +25,9 @@ async function init() {
   fragmentForm.onsubmit = async (event) => {
     event.preventDefault();
     const fragmentText = fragmentInput.value;
-    if (fragmentText) {
+    const selectedFile = imageInput.files[0];
+
+    if (fragmentText && !selectedFile) {
       const user = await getUser();
       if (user) {
         const response = await createFragment(user, fragmentText, fragmentType.value);
@@ -35,8 +37,39 @@ async function init() {
           viewSwitch.checked ? true : false
         );
       }
+    } else if (!fragmentText && selectedFile) {
+      const user = await getUser();
+      if (user) {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        const response = await createFragment(user, formData, fragmentType.value);
+        imageInput.value = '';
+        addFragmentToList(
+          viewSwitch.checked ? response.fragment : response.fragment.id,
+          viewSwitch.checked ? true : false
+        );
+      }
     }
   };
+
+  // Event listener to disable inputs
+  fragmentInput.addEventListener('input', () => {
+    if (fragmentInput.value) {
+      imageInput.disabled = true;
+    } else {
+      imageInput.disabled = false;
+    }
+  });
+
+  imageInput.addEventListener('change', () => {
+    if (imageInput.files.length > 0) {
+      fragmentInput.disabled = true;
+      fragmentType.disabled = true;
+    } else {
+      fragmentInput.disabled = false;
+      fragmentType.disabled = false;
+    }
+  });
 
   viewSwitch.addEventListener('change', () => {
     const fragmentList = document.querySelector('#fragmentList');
@@ -63,6 +96,10 @@ async function init() {
   // Handle clear button click
   clearBtn.onclick = () => {
     fragmentInput.value = '';
+    imageInput.value = '';
+    fragmentInput.disabled = false;
+    imageInput.disabled = false;
+    fragmentType.disabled = false;
   };
 
   // Verify if user is signed in
