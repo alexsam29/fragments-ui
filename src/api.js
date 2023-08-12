@@ -72,3 +72,28 @@ export async function getFragmentDataById(user, fragmentId) {
     console.error('Unable to call GET /v1/fragment', { err });
   }
 }
+
+/**
+ * Given an authenticated user and data, delete a fragment
+ * @param {*} user A user object for authentication
+ * @param {} fragmentData Data for the fragment
+ * @returns {Promise<any>} Confirmation response
+ */
+export async function deleteFragmentById(user, fragmentId) {
+  console.log('Deleting fragment...');
+  try {
+    const res = await fetch(`${apiUrl}/v1/fragments/${fragmentId}`, {
+      method: 'DELETE',
+      headers: {
+        ...user.authorizationHeaders(),
+      },
+    });
+    if (!res.ok) {
+      throw new Error(`${res.status} ${res.statusText}`);
+    }
+
+    return await res.json();
+  } catch (err) {
+    console.error('Unable to delete a new fragment', { err });
+  }
+}

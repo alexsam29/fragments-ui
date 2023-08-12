@@ -1,5 +1,5 @@
 import { Auth, getUser } from './auth';
-import { getUserFragments, createFragment, getFragmentDataById } from './api';
+import { getUserFragments, createFragment, getFragmentDataById, deleteFragmentById } from './api';
 
 async function init() {
   // UI elements
@@ -128,6 +128,9 @@ document.addEventListener('click', (event) => {
       .replace('Fragment ID: ', '')
       .split(' ')[0];
     openModal(fragmentId);
+  } else if (event.target.classList.contains('deleteBtn')) {
+    const fragmentId = event.target.getAttribute('data-fragment-id');
+    deleteFragment(fragmentId);
   }
 });
 
@@ -185,6 +188,17 @@ async function openModal(fragmentId) {
 function addFragmentToList(fragment, expand = false) {
   const listItem = document.createElement('li');
   listItem.classList.add('list-group-item');
+  listItem.setAttribute('data-fragment-id', fragment ? fragment : fragment.id);
+
+  // Create a delete button
+  const deleteButton = document.createElement('button');
+  deleteButton.type = 'button';
+  deleteButton.classList.add('btn', 'btn-danger', 'btn-md', 'ms-2', 'float-end');
+  deleteButton.innerText = 'Delete';
+  deleteButton.addEventListener('click', () => {
+    deleteFragment(fragment ? fragment : fragment.id);
+  });
+
   if (expand) {
     listItem.innerHTML = `<span><b>Fragment ID:</b> ${fragment.id}<br>
                           Owner ID: ${fragment.ownerId}<br>
@@ -194,15 +208,29 @@ function addFragmentToList(fragment, expand = false) {
                           ${new Date(fragment.created).toLocaleTimeString()}<br>
                           Updated: ${new Date(fragment.updated).toDateString()} 
                           ${new Date(fragment.updated).toLocaleTimeString()}</span>
-                          <button type="button" class="btn btn-primary btn-md ms-2 viewBtn float-end translate-middle" data-bs-toggle="modal" data-bs-target="#dataModal">View</button>`;
+                          <button type="button" class="btn btn-primary btn-md ms-2 viewBtn float-end" data-bs-toggle="modal" data-bs-target="#dataModal">View</button>`;
   } else {
     listItem.innerHTML = `
           <span><b>Fragment ID:</b> ${fragment}</span>
-          <button type="button" class="btn btn-primary btn-sm ms-2 viewBtn float-end" data-bs-toggle="modal" data-bs-target="#dataModal">View</button>
-        `;
+          <button type="button" class="btn btn-primary btn-md ms-2 viewBtn float-end" data-bs-toggle="modal" data-bs-target="#dataModal">View Data</button>`;
   }
 
+  // Append the delete button to the list item
+  listItem.appendChild(deleteButton);
+
   fragmentsList.querySelector('ul').appendChild(listItem);
+}
+
+async function deleteFragment(fragmentId) {
+  const user = await getUser();
+  const res = await deleteFragmentById(user, fragmentId);
+
+  if (res.status === 'ok') {
+    const listItem = document.querySelector(`[data-fragment-id="${fragmentId}"]`);
+    if (listItem) {
+      listItem.remove();
+    }
+  }
 }
 
 // Wait for the DOM to load, then start the app
