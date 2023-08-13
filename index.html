@@ -35,10 +35,6 @@
         <select class="form-select" id="contentTypeSelect" required>
           <option value="text/plain">Plain Text</option>
           <option value="text/html">HTML</option>
-          <option value="text/css">CSS</option>
-          <option value="text/csv">CSV</option>
-          <option value="text/javascript">Javascript</option>
-          <option value="text/xml">XML</option>
           <option value="text/markdown">Markdown</option>
           <option value="application/json">JSON</option>
         </select>
@@ -71,8 +67,9 @@
         </div>
         <div class="modal-body" id="dataModalBody">
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer" id="dataModalFooter">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="updateBtn">Update</button>
         </div>
       </div>
     </div>

@@ -37,7 +37,7 @@ export async function createFragment(user, fragmentData, contentType) {
     const res = await fetch(`${apiUrl}/v1/fragments`, {
       method: 'POST',
       headers: {
-        ...user.authorizationHeaders(contentType),
+        ...user.authorizationHeaders(contentType.split(';')[0]),
       },
       body: fragmentData,
     });
@@ -95,5 +95,26 @@ export async function deleteFragmentById(user, fragmentId) {
     return await res.json();
   } catch (err) {
     console.error('Unable to delete a new fragment', { err });
+  }
+}
+
+export async function updateFragmentById(user, fragmentId, data, contentType) {
+  console.log('Updating fragment data by ID...');
+  console.log(contentType);
+  try {
+    const res = await fetch(`${apiUrl}/v1/fragments/${fragmentId}`, {
+      method: 'PUT',
+      headers: {
+        ...user.authorizationHeaders(contentType.split(';')[0]),
+      },
+      body: data,
+    });
+    if (!res.ok) {
+      throw new Error(`${res.status} ${res.statusText}`);
+    }
+
+    return await res;
+  } catch (err) {
+    console.error('Unable to call GET /v1/fragment', { err });
   }
 }
