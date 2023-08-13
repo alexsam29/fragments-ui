@@ -108,7 +108,6 @@ export async function deleteFragmentById(user, fragmentId) {
  */
 export async function updateFragmentById(user, fragmentId, data, contentType) {
   console.log('Updating fragment data by ID...');
-  console.log(contentType);
   try {
     const res = await fetch(`${apiUrl}/v1/fragments/${fragmentId}`, {
       method: 'PUT',
