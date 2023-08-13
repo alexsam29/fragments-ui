@@ -202,7 +202,13 @@ async function openModal(fragmentId) {
   });
 
   const closeButton = document.getElementById('closeBtn');
+  const closeX = document.getElementById('closeX');
   closeButton.addEventListener('click', async () => {
+    body.innerHTML = '';
+    converted = false;
+  });
+  closeX.addEventListener('click', async () => {
+    body.innerHTML = '';
     converted = false;
   });
 }
@@ -214,7 +220,7 @@ async function openModal(fragmentId) {
 function addFragmentToList(fragment, expand = false) {
   const listItem = document.createElement('li');
   listItem.classList.add('list-group-item');
-  listItem.setAttribute('data-fragment-id', fragment ? fragment : fragment.id);
+  listItem.setAttribute('data-fragment-id', fragment.id ? fragment.id : fragment);
 
   // Create a delete button
   const deleteButton = document.createElement('button');
@@ -222,7 +228,7 @@ function addFragmentToList(fragment, expand = false) {
   deleteButton.classList.add('btn', 'btn-danger', 'btn-md', 'ms-2', 'float-end');
   deleteButton.innerText = 'Delete';
   deleteButton.addEventListener('click', () => {
-    deleteFragment(fragment ? fragment : fragment.id);
+    deleteFragment(fragment.id ? fragment.id : fragment);
   });
 
   if (expand) {
@@ -372,7 +378,6 @@ async function performConvert(fragmentId, sourceContentType, modalBody) {
   // Perform the conversion based on source and target content types
   let convertedContent = content;
   if (sourceContentType.split(';')[0] === 'text/markdown') {
-    console.log('targetContentType');
     if (targetContentType === 'text/plain') {
       // Convert Markdown to plain text
       convertedContent = await getConvertedFragmentDataById(user, fragmentId, 'txt');
@@ -443,7 +448,6 @@ async function performConvert(fragmentId, sourceContentType, modalBody) {
     modalBody.innerHTML = await convertedContent.text();
   } else {
     const buffer = await convertedContent.arrayBuffer();
-    console.log(targetContentType);
     const blob = new Blob([buffer], { type: targetContentType });
     const imageUrl = URL.createObjectURL(blob);
     modalBody.innerHTML = `<img src="${imageUrl}" alt="Image" style="max-width:100%;max-height:100%;">`;
