@@ -98,6 +98,14 @@ export async function deleteFragmentById(user, fragmentId) {
   }
 }
 
+/**
+ * Given an authenticated user, update the data for a fragment
+ * @param {*} user A user object for authentication
+ * @param {} fragmentId ID for a specific fragment
+ * @param {} data updated data for fragment
+ * @param {} contentType content type of the data
+ * @returns {Promise<any>} Confirmation response
+ */
 export async function updateFragmentById(user, fragmentId, data, contentType) {
   console.log('Updating fragment data by ID...');
   console.log(contentType);
@@ -108,6 +116,29 @@ export async function updateFragmentById(user, fragmentId, data, contentType) {
         ...user.authorizationHeaders(contentType.split(';')[0]),
       },
       body: data,
+    });
+    if (!res.ok) {
+      throw new Error(`${res.status} ${res.statusText}`);
+    }
+
+    return await res;
+  } catch (err) {
+    console.error('Unable to call GET /v1/fragment', { err });
+  }
+}
+
+/**
+ * Given an authenticated user, convert a fragment's data to a specified type
+ * @param {*} user A user object for authentication
+ * @param {} fragmentId ID for a specific fragment
+ * @param {} extension file extension
+ * @returns {Promise<any>} Confirmation response
+ */
+export async function getConvertedFragmentDataById(user, fragmentId, extension) {
+  console.log('Getting converted fragment data by ID...');
+  try {
+    const res = await fetch(`${apiUrl}/v1/fragments/${fragmentId}.${extension}`, {
+      headers: user.authorizationHeaders(),
     });
     if (!res.ok) {
       throw new Error(`${res.status} ${res.statusText}`);

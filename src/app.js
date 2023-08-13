@@ -5,7 +5,9 @@ import {
   getFragmentDataById,
   deleteFragmentById,
   updateFragmentById,
+  getConvertedFragmentDataById,
 } from './api';
+var converted = false;
 
 async function init() {
   // UI elements
@@ -157,41 +159,51 @@ async function openModal(fragmentId) {
   const contentType = fragmentData.headers.get('content-type');
 
   // TODO: convert data to HTML format to display.
-  switch (true) {
-    case contentType.includes('text/plain'):
-      body.innerText = await fragmentData.text();
-      break;
-    case contentType.includes('text/html'):
-      body.innerHTML = await fragmentData.text();
-      break;
-    case contentType.includes('text/markdown'):
-      body.innerText = await fragmentData.text();
-      break;
-    case contentType.startsWith('image/'):
-      try {
-        const buffer = await fragmentData.arrayBuffer();
-        console.log(contentType);
-        console.log(buffer);
-        const blob = new Blob([buffer], { type: contentType });
-        const imageUrl = URL.createObjectURL(blob);
-        body.innerHTML = `<img src="${imageUrl}" alt="Image" style="max-width:100%;max-height:100%;">`;
-        // Revoke the Blob URL after the image has been displayed
-        body.querySelector('img').onload = () => {
-          URL.revokeObjectURL(imageUrl);
-        };
-      } catch (error) {
-        console.error('Error displaying image:', error);
-      }
-      break;
-    default:
-      body.innerText = JSON.stringify(await fragmentData.json());
-      break;
+  if (!converted) {
+    switch (true) {
+      case contentType.includes('text/plain'):
+        body.innerText = await fragmentData.text();
+        break;
+      case contentType.includes('text/html'):
+        body.innerHTML = await fragmentData.text();
+        break;
+      case contentType.includes('text/markdown'):
+        body.innerText = await fragmentData.text();
+        break;
+      case contentType.startsWith('image/'):
+        try {
+          const buffer = await fragmentData.arrayBuffer();
+          const blob = new Blob([buffer], { type: contentType });
+          const imageUrl = URL.createObjectURL(blob);
+          body.innerHTML = `<img src="${imageUrl}" alt="Image" style="max-width:100%;max-height:100%;">`;
+          // Revoke the Blob URL after the image has been displayed
+          body.querySelector('img').onload = () => {
+            URL.revokeObjectURL(imageUrl);
+          };
+        } catch (error) {
+          console.error('Error displaying image:', error);
+        }
+        break;
+      default:
+        body.innerText = JSON.stringify(await fragmentData.json());
+        break;
+    }
   }
 
   // Add a button to update the fragment
   const updateButton = document.getElementById('updateBtn');
   updateButton.addEventListener('click', () => {
     updateFragment(fragmentId, contentType);
+  });
+
+  const convertButton = document.getElementById('convertBtn');
+  convertButton.addEventListener('click', () => {
+    convertFragment(fragmentId, contentType, body);
+  });
+
+  const closeButton = document.getElementById('closeBtn');
+  closeButton.addEventListener('click', async () => {
+    converted = false;
   });
 }
 
@@ -304,6 +316,146 @@ async function performUpdate(fragmentId, contentType, modalBody) {
   } catch (error) {
     console.error('Error updating fragment:', error);
   }
+}
+
+async function convertFragment(fragmentId, sourceContentType, modalBody) {
+  converted = false;
+  modalBody.innerHTML = '';
+
+  // Display a dropdown for selecting the target content type
+  const targetContentTypeSelect = document.createElement('select');
+  targetContentTypeSelect.classList.add('form-select', 'mb-3');
+  targetContentTypeSelect.id = 'targetContentTypeSelect';
+  if (sourceContentType.startsWith('text/')) {
+    targetContentTypeSelect.innerHTML = `
+    <option value="text/plain">Plain Text</option>
+    <option value="text/html">HTML</option>
+    <option value="text/markdown">Markdown</option>
+  `;
+  } else if (sourceContentType.startsWith('application/json')) {
+    targetContentTypeSelect.innerHTML = `<option value="text/plain">Plain Text</option>`;
+  } else {
+    targetContentTypeSelect.innerHTML = `
+    <option value="image/jpg">JPEG</option>
+    <option value="image/png">PNG</option>
+    <option value="image/webp">WEBP</option>
+    <option value="image/gif">GIF</option>
+  `;
+  }
+  modalBody.appendChild(targetContentTypeSelect);
+
+  // Display a "Convert" button
+  const confirmConvertButton = document.createElement('button');
+  confirmConvertButton.type = 'button';
+  confirmConvertButton.classList.add('btn', 'btn-success', 'mt-3');
+  confirmConvertButton.innerText = 'Confirm Convert';
+  confirmConvertButton.addEventListener('click', async () => {
+    await performConvert(fragmentId, sourceContentType, modalBody);
+  });
+  modalBody.appendChild(confirmConvertButton);
+}
+
+async function performConvert(fragmentId, sourceContentType, modalBody) {
+  const user = await getUser();
+  if (!user) {
+    console.error('User not authenticated.');
+    return;
+  }
+
+  const targetContentTypeSelect = modalBody.querySelector('#targetContentTypeSelect');
+  const targetContentType = targetContentTypeSelect.value;
+
+  // Get the fragment data
+  const fragmentData = await getFragmentDataById(user, fragmentId);
+  const content = fragmentData;
+
+  // Perform the conversion based on source and target content types
+  let convertedContent = content;
+  if (sourceContentType.split(';')[0] === 'text/markdown') {
+    console.log('targetContentType');
+    if (targetContentType === 'text/plain') {
+      // Convert Markdown to plain text
+      convertedContent = await getConvertedFragmentDataById(user, fragmentId, 'txt');
+    } else if (targetContentType === 'text/html') {
+      // Convert Markdown to HTML
+      convertedContent = await getConvertedFragmentDataById(user, fragmentId, 'html');
+    }
+  } else if (sourceContentType.split(';')[0] === 'text/html') {
+    if (targetContentType === 'text/markdown') {
+      // Convert HTML to Markdown
+      convertedContent = await getConvertedFragmentDataById(user, fragmentId, 'md');
+    } else if (targetContentType === 'text/plain') {
+      // Convert HTML to plain text
+      convertedContent = await getConvertedFragmentDataById(user, fragmentId, 'txt');
+    }
+  } else if (sourceContentType.split(';')[0] === 'image/jpg') {
+    if (targetContentType === 'image/png') {
+      // Convert JPEG to PNG
+      convertedContent = await getConvertedFragmentDataById(user, fragmentId, 'png');
+    } else if (targetContentType === 'image/webp') {
+      // Convert JPEG to webp
+      convertedContent = await getConvertedFragmentDataById(user, fragmentId, 'webp');
+    } else if (targetContentType === 'image/gif') {
+      // Convert JPEG to gif
+      convertedContent = await getConvertedFragmentDataById(user, fragmentId, 'gif');
+    }
+  } else if (sourceContentType.split(';')[0] === 'image/png') {
+    if (targetContentType === 'image/jpg') {
+      // Convert PNG to JPEG
+      convertedContent = await getConvertedFragmentDataById(user, fragmentId, 'jpg');
+    } else if (targetContentType === 'image/webp') {
+      // Convert PNG to webp
+      convertedContent = await getConvertedFragmentDataById(user, fragmentId, 'webp');
+    } else if (targetContentType === 'image/gif') {
+      // Convert PNG to gif
+      convertedContent = await getConvertedFragmentDataById(user, fragmentId, 'gif');
+    }
+  } else if (sourceContentType.split(';')[0] === 'image/webp') {
+    if (targetContentType === 'image/png') {
+      // Convert WEBP to PNG
+      convertedContent = await getConvertedFragmentDataById(user, fragmentId, 'png');
+    } else if (targetContentType === 'image/jpg') {
+      // Convert WEBP to JPEG
+      convertedContent = await getConvertedFragmentDataById(user, fragmentId, 'jpg');
+    } else if (targetContentType === 'image/gif') {
+      // Convert WEBP to gif
+      convertedContent = await getConvertedFragmentDataById(user, fragmentId, 'gif');
+    }
+  } else if (sourceContentType.split(';')[0] === 'image/gif') {
+    if (targetContentType === 'image/png') {
+      // Convert GIF to PNG
+      convertedContent = await getConvertedFragmentDataById(user, fragmentId, 'png');
+    } else if (targetContentType === 'image/webp') {
+      // Convert GIF to webp
+      convertedContent = await getConvertedFragmentDataById(user, fragmentId, 'webp');
+    } else if (targetContentType === 'image/jpg') {
+      // Convert GIF to JPEG
+      convertedContent = await getConvertedFragmentDataById(user, fragmentId, 'jpg');
+    }
+  } else if (sourceContentType.split(';')[0] === 'application/json') {
+    if (targetContentType === 'text/plain') {
+      // Convert JSON to text
+      convertedContent = await getConvertedFragmentDataById(user, fragmentId, 'txt');
+    }
+  }
+
+  if (sourceContentType.startsWith('text/') || sourceContentType.startsWith('application/json')) {
+    modalBody.innerHTML = await convertedContent.text();
+  } else {
+    const buffer = await convertedContent.arrayBuffer();
+    console.log(targetContentType);
+    const blob = new Blob([buffer], { type: targetContentType });
+    const imageUrl = URL.createObjectURL(blob);
+    modalBody.innerHTML = `<img src="${imageUrl}" alt="Image" style="max-width:100%;max-height:100%;">`;
+    // Revoke the Blob URL after the image has been displayed
+    modalBody.querySelector('img').onload = () => {
+      URL.revokeObjectURL(imageUrl);
+    };
+  }
+
+  // Reload the updated data in the modal
+  converted = true;
+  await openModal(fragmentId);
 }
 
 // Wait for the DOM to load, then start the app
